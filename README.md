@@ -86,9 +86,6 @@ python train.py
 # length [50, 40, 30, 20, 10], respectively.
 python eval.py
 
-# Note: Validation under Variable-Length Observation
-
-
 # Test for submission
 python eval.py gpus=1 test=true
 ```
