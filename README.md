@@ -16,8 +16,8 @@ Trajectory prediction is critical for autonomous driving, enabling safe and effi
 
 ### Set up a new virtual environment
 ```
-conda create -n DeMo python=3.10
-conda activate DeMo
+conda create -n PRF python=3.10
+conda activate PRF
 ```
 
 ### Install dependency packpages
@@ -81,7 +81,13 @@ python preprocess_av2.py --data_root=/path/to/data_root -p
 python train.py 
 
 # Val, remember to change the checkpoint to your own in eval.py
+# Note: In `conf/datamodule/av2.yaml`, set `val_squence_start`
+# to [0`, 10, 20, 30, 40] (line 18) to validate with observation
+# length [50, 40, 30, 20, 10], respectively.
 python eval.py
+
+# Note: Validation under Variable-Length Observation
+
 
 # Test for submission
 python eval.py gpus=1 test=true
