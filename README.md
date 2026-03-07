@@ -89,7 +89,7 @@ python eval.py gpus=1 test=true
 
 ### Qualitative Results
 <div align="center">
-  <img src="assets/visualization.jpg"/>
+  <img src="assets/visualization.png"/>
 </div><br/>
 
 
