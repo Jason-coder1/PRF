@@ -1,0 +1,50 @@
+name: baseline
+phase: default
+
+target:
+  _target_: src.model.trainer_forecast.Trainer
+  model:
+    embed_dim: 128
+    future_steps: ${future_steps}
+    num_heads: 8
+    mlp_ratio: 4.0
+    qkv_bias: False
+    drop_path: 0.2
+  pretrained_weights: ${pretrained_weights}
+  lr: ${lr}
+  weight_decay: ${weight_decay}
+  epochs: ${epochs}
+  warmup_epochs: ${warmup_epochs}
+  align_weight_start: ${align_weight_start}
+  align_weight_end: ${align_weight_end}
+  align_weight_warmup_epochs: ${align_weight_warmup_epochs}
+
+
+  # av2:
+  alignment_pairs:
+    - [[40, 50], [30, 50]] # 10->20
+    - [[30, 50], [20, 50]] # 20->30
+    - [[20, 50], [10, 50]] # 30->40
+    - [[10, 50], [0, 50]] # 40->50
+    - [[30, 40], [20, 40]] # 10->20
+    - [[20, 40], [10, 40]] # 20->30
+    - [[10, 40], [0, 40]] # 30->40
+    - [[20, 30], [10, 30]] # 10->20
+    - [[10, 30], [0, 30]] # 20->30
+    - [[10, 20], [0, 20]] # 10-20
+
+  # av2-direct_distill:
+  #alignment_pairs:
+  #  - [[40, 50], [0, 50]] # 10->50
+  #  - [[30, 50], [0, 50]] # 10->50
+  #  - [[20, 50], [0, 50]] # 10->50
+  #  - [[10, 50], [0, 50]] # 10->50
+
+  # av1:
+  #alignment_pairs:
+  #  - [[15, 20], [10, 20]] # 15-20
+  #  - [[10, 20], [5, 20]] # 10-20
+  #  - [[5, 20], [0, 20]] # 5-20
+  #  - [[10, 15], [5, 15]] # 10-15
+  #  - [[5, 15], [0, 15]] # 5-10
+  #  - [[5, 10], [0, 10]] # 10-15
