@@ -9,7 +9,7 @@ Trajectory prediction is critical for autonomous driving, enabling safe and effi
 
 ## 🎞️ Pipeline
 <div align="center">
-  <img src="assets/main.jpg"/>
+  <img src="assets/architecture.png"/>
 </div><br/>
 
 ## 🛠️ Get started
