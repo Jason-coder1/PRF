@@ -112,17 +112,10 @@ class RetrodictiveDecoder(nn.Module):
         self.multi_modal_query_embedding = nn.Embedding(6, dim)
         self.register_buffer('modal', torch.arange(6).long())
 
-        #self.goal_predictor = nn.Sequential(
-        #    nn.Linear(dim, 256), nn.GELU(), nn.Linear(256, 2)
-        #)
-        #self.mode_predictor = nn.Sequential(
-        #    nn.Linear(dim, 256), nn.GELU(), nn.Linear(256, retrodictive_len*2)
-        #)
         self.mode_predictor = GMMPredictor(retrodictive_len)
 
 
         ###### Hybrid Coupling Module ######
-        #self.cross_st_block = BANStyleCrossAttention(dim)
 
         self.mode_embedding_mlp = nn.Sequential(
             nn.Linear(2*retrodictive_len, 64),
@@ -136,11 +129,6 @@ class RetrodictiveDecoder(nn.Module):
             for i in range(3)
         )
 
-        # hybrid cross attention
-        #self.cross_block_dense = nn.ModuleList(
-        #    Cross_Block()
-        #    for i in range(1)
-        #)
         self.mixquery_embed_mamba = nn.ModuleList(  
             [
                 create_block(  
@@ -157,7 +145,6 @@ class RetrodictiveDecoder(nn.Module):
         self.mixquery_drop_path = DropPath(0.2)
 
         # MLP for final output -> from single modality to multi-modality
-        #self.predictor_dense = GMMPredictor_dense(retrodictive_len)
         self.predictor_dense = nn.Sequential(
             nn.Linear(dim, 256), nn.GELU(), nn.Linear(256, retrodictive_len*2)
         )
@@ -208,30 +195,13 @@ class RetrodictiveDecoder(nn.Module):
         for blk in self.self_block_mode:
             mode = blk(mode, norm_layer=self.layerNorm) # shape: (B, M, dim)
 
-        #mode_pred = self.mode_predictor(mode)#.view(mode.size(0), mode.size(1), -1, 2)
         x_hat_hist, pi_hist, scal_hist = self.mode_predictor(mode)
-
-        # Hybrid query coupling
-        #mode_embedding = self.mode_embedding_mlp(mode_pred)        
-        #mode_dense = mode_embedding[:, :, None] + mode_tmp[:, None, :]
-        #B, M, T, C = mode_dense.shape
-        
-        #mode_dense = self.cross_st_block(mode_tmp, mode_embedding)
-        #B, T, M, C = mode_dense.shape
-
-        #best_goal = torch.argmax(pi_hist, dim=-1)
-        #mode_dense = mode_tmp + mode[torch.arange(best_goal.shape[0]), best_goal].unsqueeze(1)
-        #B, T, C = mode_dense.shape
 
         B, M, T, _ = x_hat_hist.shape
         mode_embedding = self.mode_embedding_mlp(x_hat_hist.reshape(B, M, T*2))
         mode_dense = mode_tmp
         for blk in self.cross_block_branch:
             mode_dense = blk(mode_dense, mode_embedding, norm_layer=self.layerNorm)
-
-        #mode_dense = mode_dense.reshape(B, -1, C)
-        #for blk in self.cross_block_dense:
-        #    mode_dense = blk(mode_dense, encoding, key_padding_mask=mask, norm_layer=self.layerNorm)
 
         residual = None
         for blk_mamba in self.mixquery_embed_mamba:
@@ -247,15 +217,9 @@ class RetrodictiveDecoder(nn.Module):
             residual_in_fp32=True
         )
 
-        #mode_dense = mode_dense.reshape(B, M, T, C)
-        #mode_dense = mode_dense.reshape(B, T, M, C).permute(0, 2, 1, 3)
-
-        #x_hat_hist, pi_hist, scal_hist = self.predictor_dense(mode_dense) # shape: (B, M, T, 2/1)
         mode_pred = self.predictor_dense(mode_dense)
 
         return mode_dense, y_hat_others, dense_pred, mode_pred, x_hat_hist, pi_hist, scal_hist
-
-        #return mode, y_hat_others, dense_pred, None, None, None, None
 
 
 class BANStyleCrossAttention(nn.Module):
