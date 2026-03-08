@@ -17,9 +17,7 @@ from src.utils.submission_av2 import SubmissionAv2
 from src.utils.LaplaceNLLLoss import LaplaceNLLLoss
 from omegaconf import OmegaConf
 
-#from .model_forecast_av2_direct import ModelForecast
 from .model_forecast_av2 import ModelForecast
-#from .model_forecast_av1 import ModelForecast
 torch.cuda.empty_cache()
 
 
@@ -139,19 +137,9 @@ class Trainer(pl.LightningModule):
 
         goal_pred = out.get("goal_predict", None)
         if goal_pred is not None:
-            #goal_pred = torch.chunk(goal_pred, chunks=(in_batch-1), dim=0) # B, M, 2
-            #goal_pred = torch.concat(goal_pred, dim=-1)  # [b, M, 8]
-            #x_goals = data_list[0]["x_positions"][:, 0, ::10][:, :-1].reshape(-1, goal_pred.shape[-1]) # [b, 5, 2] -> [b, 4, 2] -> [B, 2]
-            '''
-            x_goals = data_list[0]["x_positions"][:, 0, ::10][:, :-1]  # [b, 4, 2]
-            x_goals = torch.chunk(x_goals, chunks=(in_batch-1), dim=1)  # [b, 1, 2] x 4
-            x_goals = torch.concat(x_goals, dim=0).squeeze(1)  # [B, 1, 2]
-            '''
             x_goals = data_list[0]["x_positions"][:, 0, :imp_length]  # [b, 40, 2]
             x_goals = torch.chunk(x_goals, chunks=(in_batch-1), dim=1)  # [b, 10, 2] x 4
             x_goals = torch.concat(x_goals, dim=0)  # [B, 10, 2]
-            #B, _, _ = x_goals.shape
-            #x_goals_flat = x_goals.reshape(B, -1)  # [B, 8]
 
         hist_x_hat = out.get("hist_x_hat", None)
         hist_pi = out.get("hist_pi", None)
@@ -251,10 +239,7 @@ class Trainer(pl.LightningModule):
         scal_f = out.get("final_scal", None)
         y_hat_f = out.get("final_y_hat", None)
         pi_f = out.get("final_pi", None)
-        ''' # generate offset to refine the final prediction results, a modification of step 3.
-        if y_hat_f is not None:
-            agent_reg_loss_f = F.smooth_l1_loss(new_y_hat[:y_hat_f.shape[0]]+y_hat_f, y[:y_hat_f.shape[0]].unsqueeze(1))
-        '''
+
         # loss for final output
         if y_hat_f is not None:
             l2_norm_f = torch.norm(y_hat_f[..., :2] - y[:y_hat_f.shape[0]].unsqueeze(1), dim=-1).sum(dim=-1)
@@ -302,8 +287,7 @@ class Trainer(pl.LightningModule):
         loss = agent_reg_loss + agent_cls_loss + others_reg_loss + \
                 new_agent_reg_loss + dense_reg_loss + new_pi_reg_loss + \
                 goal_reg_loss + hist_others_reg_loss + hist_reg_loss + \
-                hist_agent_reg_loss + hist_pi_reg_loss + agent_reg_loss_f #+ \
-                #pi_reg_loss_f
+                hist_agent_reg_loss + hist_pi_reg_loss + agent_reg_loss_f
 
         loss = loss + laplace_loss + laplace_loss_new + laplace_loss_hist #+ laplace_loss_f
 
@@ -368,11 +352,6 @@ class Trainer(pl.LightningModule):
         self.net.teacher_feats.clear() # 对应模型保存的特征字典
         self.net.student_feats.clear()
 
-        # parallel training on a batch with the same hist_end parameter
-        #out = self(data_list)
-        #loss, loss_dict = self.cal_loss(out, data_list)
-        #total_loss += loss
-
         data_groups = {}
         for data in data_list:
             hist_end = data.get('hist_end')[0].item() 
@@ -393,10 +372,6 @@ class Trainer(pl.LightningModule):
 
             for k, v in loss_dict.items():
                 total_loss_dict[k] += v * batch_weight
-
-        # ---- 及时释放 ----
-        #del out, loss, loss_dict, data_sublist
-        #torch.cuda.empty_cache()   # 清理缓存
 
         total_loss += model_loss
 
@@ -431,98 +406,13 @@ class Trainer(pl.LightningModule):
 
         return total_loss
 
-    '''
-    def on_validation_epoch_start(self):
-        # reset accumulators
-        self._val_total_time_s = 0.0
-        self._val_total_batches = 0
-        self._val_total_samples = 0
-        self._val_flops_per_sample = None
-
-    def on_validation_epoch_end(self):
-        # aggregate & log epoch-level averages
-        if self._val_total_batches == 0:
-            return
-        avg_ms_per_batch = (self._val_total_time_s / self._val_total_batches) * 1000.0
-        avg_ms_per_sample = (self._val_total_time_s / max(1, self._val_total_samples)) * 1000.0
-        throughput = (self._val_total_samples / self._val_total_time_s) if self._val_total_time_s > 0 else float("inf")
-
-        # 这些是“验证集平均”指标
-        self.log("val/avg_latency_ms_per_batch", avg_ms_per_batch, prog_bar=True, on_epoch=True, sync_dist=True)
-        self.log("val/avg_latency_ms_per_sample", avg_ms_per_sample, prog_bar=False, on_epoch=True, sync_dist=True)
-        self.log("val/throughput_samples_per_s", throughput, prog_bar=True, on_epoch=True, sync_dist=True)
-
-        # FLOPs（按样本）；batch 的 FLOPs = per_sample * 平均 batch_size
-        if self._val_flops_per_sample is not None and not (isinstance(self._val_flops_per_sample, float) and math.isnan(self._val_flops_per_sample)):
-            self.log("val/FLOPs_per_sample", self._val_flops_per_sample, on_epoch=True, sync_dist=True)
-            avg_bs = self._val_total_samples / self._val_total_batches
-            self.log("val/FLOPs_per_batch", self._val_flops_per_sample * avg_bs, on_epoch=True, sync_dist=True)
-    '''
-
     def validation_step(self, data, batch_idx):
-        '''
-        # ===== 计时（只包住前向，不含指标计算）=====
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
-            _start = torch.cuda.Event(enable_timing=True)
-            _end = torch.cuda.Event(enable_timing=True)
-            _start.record()
-            out = self(data)   # ← 你的前向
-            _end.record()
-            torch.cuda.synchronize()
-            elapsed_ms = float(_start.elapsed_time(_end))
-        else:
-            t0 = time.perf_counter()
-            out = self(data)
-            elapsed_ms = (time.perf_counter() - t0) * 1000.0
-
-        # 推断 batch size（按你的数据结构）
-        try:
-            bs = int(data[0]['target'].shape[0])
-        except Exception:
-            bs = None
-
-        # 累计
-        self._val_total_time_s += elapsed_ms / 1000.0
-        self._val_total_batches += 1
-        if bs is not None:
-            self._val_total_samples += bs
-
-        # ====== FLOPs（仅第一个可用 batch；会额外跑一次前向用于分析）======
-        if self._val_flops_per_sample is None and bs is not None:
-            try:
-                from fvcore.nn import FlopCountAnalysis
-                # 注：这里直接对 self.net 做分析，输入与 forward 一致
-                with torch.inference_mode():
-                    flops_batch = FlopCountAnalysis(self.net, (data,)).total()  # 次/批
-                self._val_flops_per_sample = flops_batch / bs
-            except Exception as e1:
-                try:
-                    from thop import profile
-                    with torch.inference_mode():
-                        macs, _ = profile(self.net, inputs=(data,), verbose=False)
-                    self._val_flops_per_sample = (macs * 2.0) / bs  # MACs≈FLOPs/2
-                except Exception as e2:
-                    self._val_flops_per_sample = float("nan")
-                    self.print(f"[FLOPs 统计失败] fvcore: {e1}; thop: {e2}")
-        '''
-
-        #if isinstance(data, list):
-        #    data = data[0]
         out = self(data)
-        #_, loss_dict = self.cal_loss(out, data)
         metrics = self.val_metrics(out, data[0]['target'][:, 0])
         if out['new_y_hat'] is not None:
             out['y_hat'] = out['new_y_hat']
-            #if out['final_y_hat'] is not None:
-            #    out['y_hat'] += out['final_y_hat']
             out['pi'] = out['new_pi']
             metrics_new = self.val_metrics_new(out, data[0]['target'][:, 0])
-
-        #if out['final_y_hat'] is not None:
-        #    out['y_hat'] = out['final_y_hat']
-        #    out['pi'] = out['final_pi']
-        #    metrics_final = self.val_metrics_final(out, data[0]['target'][:, 0])
 
         self.log_dict(
             metrics,
@@ -541,26 +431,15 @@ class Trainer(pl.LightningModule):
                 batch_size=1,
                 sync_dist=True,
             )
-        #if out['final_y_hat'] is not None:
-        #    self.log_dict(
-        #        metrics_final,
-        #        prog_bar=True,
-        #        on_step=False,
-        #        on_epoch=True,
-        #        batch_size=1,
-        #        sync_dist=True,
-        #    )
 
     def on_test_start(self) -> None:
         save_dir = Path("./submission")
         save_dir.mkdir(exist_ok=True)
-        self.submission_handler = SubmissionAv2( # SubmissionAv1 for evaluating argoverse 1 dataset
+        self.submission_handler = SubmissionAv2(
             save_dir=save_dir
         )
 
     def test_step(self, data, batch_idx) -> None:
-        #if isinstance(data, list):
-        #    data = data[0]
         out = self(data)
         if out['new_y_hat'] is not None:
             out['y_hat'] = out['new_y_hat']
