@@ -49,13 +49,11 @@ class Block(nn.Module):
         attn_drop=0.2,
         drop_path=0.2,
         act_layer=nn.GELU,
-        #norm_layer=nn.LayerNorm,
         post_norm=False,
     ):
         super().__init__()
         self.post_norm = post_norm
 
-        #self.norm1 = norm_layer(dim)
         self.attn = torch.nn.MultiheadAttention(
             dim,
             num_heads=num_heads,
@@ -65,7 +63,6 @@ class Block(nn.Module):
         )
         self.drop_path1 = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
 
-        #self.norm2 = norm_layer(dim)
         self.mlp = Mlp(
             in_features=dim,
             hidden_features=int(dim * mlp_ratio),
@@ -82,7 +79,6 @@ class Block(nn.Module):
         norm_layer: Optional[nn.Module] = None,
     ):
         src2 = norm_layer(src)
-        #src2 = self.norm1(src)
         src2 = self.attn(
             query=src2,
             key=src2,
@@ -92,7 +88,6 @@ class Block(nn.Module):
         )[0]
         src = src + self.drop_path1(src2)
         src = src + self.drop_path2(self.mlp(norm_layer(src)))
-        #src = src + self.drop_path2(self.mlp(self.norm2(src)))
         return src
 
     def forward_post(
@@ -111,8 +106,6 @@ class Block(nn.Module):
         )[0]
         src = src + self.drop_path1(norm_layer(src2))
         src = src + self.drop_path2(norm_layer(self.mlp(src)))
-        #src = src + self.drop_path1(self.norm1(src2))
-        #src = src + self.drop_path2(self.norm2(self.mlp(src)))
         return src
 
     def forward(
@@ -141,11 +134,9 @@ class Cross_Block(nn.Module):
         attn_drop=0.2,
         drop_path=0.2,
         act_layer=nn.GELU,
-        #norm_layer=nn.LayerNorm,
     ):
         super().__init__()
 
-        #self.norm1 = norm_layer(dim)
         self.attn = torch.nn.MultiheadAttention(
             dim,
             num_heads=num_heads,
@@ -155,7 +146,6 @@ class Cross_Block(nn.Module):
         )
         self.drop_path1 = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
 
-        #self.norm2 = norm_layer(dim)
         self.mlp = Mlp(
             in_features=dim,
             hidden_features=int(dim * mlp_ratio),
@@ -174,8 +164,6 @@ class Cross_Block(nn.Module):
     ):
         src2 = norm_layer(src)
         src2_kv = norm_layer(src_kv)
-        #src2 = self.norm1(src)
-        #src2_kv = self.norm1(src_kv)
         src2 = self.attn(
             query=src2,
             key=src2_kv,
@@ -185,7 +173,6 @@ class Cross_Block(nn.Module):
         )[0]
         src = src + self.drop_path1(src2)
         src = src + self.drop_path2(self.mlp(norm_layer(src)))
-        #src = src + self.drop_path2(self.mlp(self.norm2(src)))
         return src
 
     def forward(
