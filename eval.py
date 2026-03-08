@@ -12,7 +12,7 @@ from importlib import import_module
 def main(conf):
     pl.seed_everything(conf.seed)
     output_dir = HydraConfig.get().runtime.output_dir
-    checkpoint = to_absolute_path("/home/zhouh/ProLa++/outputs/change_av2_default_baseline_default/TRU-0_20/checkpoints/epoch=58.ckpt")
+    checkpoint = to_absolute_path("ckpts/PRF.ckpt")  # TODO change to your checkpoint
     assert os.path.exists(checkpoint), f"Checkpoint {checkpoint} does not exist"
 
     trainer = pl.Trainer(
