@@ -39,4 +39,4 @@ limit_val_batches:
 
 limit_test_batches:
 log_model: all
-test: False
+test: false  # false for val, true for test
