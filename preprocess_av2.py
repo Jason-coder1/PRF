@@ -17,7 +17,7 @@ def preprocess(args):
     data_root = Path(args.data_root)
 
     for mode in ["train"]: #["val", "test"]:
-        save_dir = Path("/mnt/sda/zhouh_data/arg2/DeMo_processed") / mode
+        save_dir = Path("data/PRF_processed") / mode
         extractor = Av2Extractor(save_path=save_dir, mode=mode)
 
         save_dir.mkdir(exist_ok=True, parents=True)
@@ -33,7 +33,7 @@ def preprocess(args):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--data_root", "-d", type=str, default='/mnt/j')
+    parser.add_argument("--data_root", "-d", type=str, default='/path/to/data_root')
     parser.add_argument("--batch", "-b", type=int, default=50)
     parser.add_argument("--parallel", "-p", default=True, action="store_true")
 
