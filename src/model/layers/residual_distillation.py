@@ -80,19 +80,3 @@ class REDistill(nn.Module):
         f_d = f_d.view(B, M, D)       # reshape 回原始尺寸
 
         return f_d
-    
-'''
-f_s_flat = f_s.view(-1, D)  # [B*M, D]
-
-# 残差路径
-f_r = self.encoder(f_s_flat)  # [B*M, D]
-
-# 门控路径
-gate = self.gate(f_s_flat)    # [B*M, D]
-f_s_weighted = gate * f_s_flat
-
-# 蒸馏输出
-f_d = f_r + f_s_weighted      # [B*M, D]
-f_d = self.norm(f_d)          # 归一化
-f_d = f_d.view(B, M, D)       # reshape 回原始尺寸
-'''
