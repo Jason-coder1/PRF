@@ -18,7 +18,6 @@ torch.cuda.empty_cache()
 import os
 import numpy as np
 
-# only 'DeMo'
 class ModelForecast(nn.Module):
     def __init__(
         self,
@@ -317,7 +316,6 @@ class ModelForecast(nn.Module):
         x_encoder = torch.cat(x_encoder_list, dim=0) # shape: (5B, N, D) 其中N表示行人和车道线数量和
 
         ###### Retrodictive decoding with decoupled queries ######   # restrodictive prediction module
-        #mode_hist = hist_others = hist_predict = goal_predict = hist_x_hat = hist_pi = hist_scal = None
         
         if self.training and len(ret_feat_list) != 0:
             ret_feat = torch.cat(ret_feat_list[::-1], dim=0) # reverse: 0-10, 10-20, 20-30, 30-40
@@ -325,13 +323,7 @@ class ModelForecast(nn.Module):
 
             mode_hist, hist_others, hist_predict, goal_predict, hist_x_hat , hist_pi , hist_scal = \
                 self.retrodictive_decoder(ret_feat, N, mask=~x_mask)
-        #elif hist_len < hist_end: # TODO: the third step, interaction between ret query and encoding feature
-        #    ret_feat = torch.cat(ret_feat_list[::-1], dim=0)
-        #    mB = ret_feat.shape[0] // key_valid_mask.shape[0]
-        #    x_mask = torch.cat([key_valid_mask]*mB, dim=0)
 
-        #    mode_hist, hist_others, hist_predict, goal_predict, hist_x_hat , hist_pi , hist_scal = \
-        #        self.retrodictive_decoder(ret_feat, N, mask=~x_mask)
         else:
             mode_hist = hist_others = hist_predict = goal_predict = hist_x_hat = hist_pi = hist_scal = None
             
