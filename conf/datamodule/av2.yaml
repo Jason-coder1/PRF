@@ -4,7 +4,7 @@ phase: default
 target:
   _target_: src.datamodule.av2_datamodule.Av2DataModule
 
-  data_root: "data/DeMo_processed"
+  data_root: "data/PRF_processed"
   train_batch_size: ${batch_size}
   val_batch_size: ${batch_size}
   test_batch_size: ${batch_size}
