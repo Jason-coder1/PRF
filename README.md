@@ -107,6 +107,6 @@ python eval.py gpus=1 test=true
 
 - Test results on standard length observations:  
 
-| Models | b-mFDE<sub>6</sub> | mADE<sub>6</sub> | mFDE<sub>6</sub> | MR<sub>6</sub> | mADE<sub>1</sub> | mFDE<sub>6</sub> |  
+| Models | b-mFDE<sub>6</sub> | mADE<sub>6</sub> | mFDE<sub>6</sub> | MR<sub>6</sub> | mADE<sub>1</sub> | mFDE<sub>1</sub> |  
 | :- | :-: | :-: | :-: | :-: | :-: | :-: |  
 | TaPD |  1.81  |  0.60  |  1.14  |  0.13  | 1.49 | 3.72 |  
