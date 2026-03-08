@@ -1,7 +1,6 @@
 defaults:
-  - datamodule: av2 # av2 for argoverse2, av1 for argoverse1
-  - model: model_forecast # in trainer_forecast.py, use model_forecast_av2 for argoverse2, model_forecast_av1 for argoverse1
-  # for test av1, change SubmissionAv2 to SubmissionAv1 in def on_test_start(self) in trainer_forecast.py
+  - datamodule: av2 
+  - model: model_forecast
 hydra:
   run:
     dir: outputs/${output}/${now:%Y%m%d-%H%M%S}
@@ -11,16 +10,16 @@ monitor: val_new_minFDE6
 save_top_k: 5
 
 data_root:
-checkpoint: #/home/zhouh/ProLa++/outputs/change_av2_default_baseline_default/20250908-175819/checkpoints/last.ckpt
+checkpoint:
 pretrained_weights:
 output: change_${datamodule.name}_${datamodule.phase}_${model.name}_${model.phase}
-future_steps: 60 # 60 for argoverse2, 30 for argoverse1
+future_steps: 60
 
 # trainer
-num_workers: 4
-gpus: [2, 0, 3, 1] # when test, only use 1 gpu; when train/val, use 2 gpus
+num_workers: 8
+gpus: [0, 1, 2, 3, 4, 5, 6, 7]
 sync_bn: true
-batch_size: 16 # 16 -> 12 when processing av2 adding [0,20] or/and [0,10] for training (16 for av1)
+batch_size: 16
 epochs: 60
 warmup_epochs: 10
 
@@ -40,4 +39,4 @@ limit_val_batches:
 
 limit_test_batches:
 log_model: all
-test: False # false for val, true for test
+test: False
