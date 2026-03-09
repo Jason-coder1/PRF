@@ -97,7 +97,7 @@ python eval.py gpus=1 test=true
 
 
 ## ⭐ Results and checkpoints
-- We provide the model: `PRF` for [PRF](https://arxiv.org/abs/2410.05982) trained on the Argoverse 2 dataset.
+- We provide the model [PRF](https://drive.google.com/file/d/1Tx_1rmaF0-DIgcfIdBCeZ4ofPWSEVYUw/view?usp=sharing) trained on the Argoverse 2 dataset.
 
 - Validation results on variable-length observations:
 
