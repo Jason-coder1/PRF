@@ -103,10 +103,10 @@ python eval.py gpus=1 test=true
 
 | Models | 10Ts | 20Ts | 20Ts | 40Ts | 50Ts |  
 | :- | :-: | :-: | :-: | :-: | :-: |  
-| TaPD |  0.617/1.183  |  0.603/1.155  |  0.598/1.143  |  0.599/1.145  | 0.596/1.142 |  
+| PRF |  0.617/1.183  |  0.603/1.155  |  0.598/1.143  |  0.599/1.145  | 0.596/1.142 |  
 
 - Test results on standard length observations:  
 
 | Models | b-mFDE<sub>6</sub> | mADE<sub>6</sub> | mFDE<sub>6</sub> | MR<sub>6</sub> | mADE<sub>1</sub> | mFDE<sub>1</sub> |  
 | :- | :-: | :-: | :-: | :-: | :-: | :-: |  
-| TaPD |  1.81  |  0.60  |  1.14  |  0.13  | 1.49 | 3.72 |  
+| PRF |  1.81  |  0.60  |  1.14  |  0.13  | 1.49 | 3.72 |  
