@@ -1,6 +1,6 @@
 # Recover to Predict: Progressive Retrospective Learning for Variable-Length Trajectory Prediction
 
-> [**Recover to Predict: Progressive Retrospective Learning for Variable-Length Trajectory Prediction**](https://arxiv.org/abs/2410.05982)  
+> [**Recover to Predict: Progressive Retrospective Learning for Variable-Length Trajectory Prediction**](https://arxiv.org/abs/2603.10597)  
 > **Hao Zhou, Lu Qi, Xiangtai Li, Jie Zhang, Yi Liu, Xu Yang, Mingyu Fan, Fei Luo**  
 > **CVPR 2026**
 
